@@ -6,7 +6,8 @@ module Lib.Field
 import Lib ( both, vec )
 import Lib.Point ( Point, pattern Point, px, py, bounded )
 import Control.Arrow ( (&&&) )
-import qualified Data.Map as Map
+import Data.Map qualified as Map
+import Data.Maybe ( listToMaybe )
 import Data.Vector ( Vector, (!), (!?), (//) )
 import Data.Vector qualified as Vec
 
@@ -25,11 +26,29 @@ updates xs field = Vec.imap updateRow field
   rowUpdates = Map.fromListWith (<>) $ extractRow <$> xs
   extractRow (Point{..}, x) = (py, [(px, x)])
 
-elemIndices :: (Show a, Eq a) => a -> Field a -> Vector Point
-elemIndices x field = do
+map :: (a -> b) -> Field a -> Field b
+map = Vec.map . Vec.map
+
+imap :: (Point -> a -> b) -> Field a -> Field b
+imap f field = Vec.imap byCol field
+  where
+  byCol y row = Vec.imap (byRow y) row
+  byRow y x a = f (Point x y) a
+
+findIndices :: Eq a => (a -> Bool) -> Field a -> Vector Point
+findIndices p field = do
   (colIx, row) <- Vec.imap (,) field
-  rowIx <- Vec.elemIndices x row
+  rowIx <- Vec.findIndices p row
   pure $ Point rowIx colIx
+
+findIndex :: Eq a => (a -> Bool) -> Field a -> Maybe Point
+findIndex p = listToMaybe . Vec.toList . findIndices p
+
+elemIndices :: Eq a => a -> Field a -> Vector Point
+elemIndices x = findIndices (==x)
+
+elemIndex :: Eq a => a -> Field a -> Maybe Point
+elemIndex x = findIndex (==x)
 
 within :: Point -> Field a -> Bool
 within point field = bounded point (extent field)
@@ -46,3 +65,18 @@ indices field = let Point{..} = extent field in
 
 replicate :: Point -> a -> Field a
 replicate Point{..} = Vec.replicate py . Vec.replicate px
+
+cardinals, ordinals :: [Point]
+northwest, north, northeast, east, southeast, south, southwest, west :: Point
+cardinals@[north, east, south, west] =
+  [ Point 0 (-1)
+  , Point 1 0
+  , Point 0 1
+  , Point (-1) 0
+  ]
+ordinals@[northwest, northeast, southeast, southwest] =
+  [ north + west
+  , north + east
+  , south + east
+  , south + west
+  ]

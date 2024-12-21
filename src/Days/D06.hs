@@ -1,14 +1,13 @@
 module Days.D06 where
 
 import Lib ( Dispatch, dispatchWith )
-import Lib.Field ( Field, Point, pattern Point, px, py )
+import Lib.Field ( Field, Point )
 import Lib.Field qualified as Field
 import Control.Arrow ( (&&&) )
-import Control.Monad ( guard )
+import Control.Monad ( guard, join )
 import Data.Maybe ( isJust )
 import Data.List qualified as List
 import Data.Set qualified as Set
-import Data.Vector qualified as Vec
 
 dispatch :: Dispatch
 dispatch = dispatchWith part1 part2
@@ -75,14 +74,14 @@ takeStep world@World{..} = do
     else pure $ World field patrol{ position = into }
 
 tryStep :: World -> Maybe (Point, Bool)
-tryStep (World field (Patrol Point{..} facing))
+tryStep (World field (Patrol point facing))
   = sequence (stepTo, Field.lookup stepTo field)
   where
   stepTo = case facing of
-    North -> Point px (pred py)
-    East  -> Point (succ px) py
-    South -> Point px (succ py)
-    West  -> Point (pred px) py
+    North -> point + Field.north
+    East  -> point + Field.east
+    South -> point + Field.south
+    West  -> point + Field.west
 
 turnCW :: Facing -> Facing
 turnCW West   = North
@@ -117,14 +116,9 @@ makeWorld
 findPatrol :: Field InputEntity -> Patrol
 findPatrol inputField = maybe (error "no patrol found") id $ do
   let
-    justPatrols = fmap (fmap justPatrol) inputField
-    rowIx = fmap (Vec.findIndex isJust) justPatrols
-  y <- Vec.findIndex isJust rowIx
-  x <- rowIx Vec.! y
-  let pos = Point x y
-  Just (IPatrol facing) <- Field.lookup pos justPatrols
+    justPatrol patrol@(IPatrol _) = Just patrol
+    justPatrol _                  = Nothing
+    justPatrols = Field.map justPatrol inputField
+  pos <- Field.findIndex isJust justPatrols
+  IPatrol facing <- join $ Field.lookup pos justPatrols
   pure $ Patrol pos facing
-
-justPatrol :: InputEntity -> Maybe InputEntity
-justPatrol patrol@(IPatrol _) = Just patrol
-justPatrol _                = Nothing
