@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 module Lib.Field
 ( module Lib.Field
 , Point, pattern Point, px, py
@@ -15,6 +16,9 @@ type Field a = Vector (Vector a)
 
 lookup :: Point -> Field a -> Maybe a
 lookup Point{..} field = (!? px) =<< field !? py
+
+ilookup :: Point -> Field a -> Maybe (Point, a)
+ilookup point = fmap (point,) . Lib.Field.lookup point
 
 update :: Point -> a -> Field a -> Field a
 update Point{..} x v = v // [(py, v ! py // [(px, x)])]
@@ -63,8 +67,8 @@ indices :: Field a -> [Point]
 indices field = let Point{..} = extent field in
   [Point x y | x <- [0..px], y <- [0..py]]
 
-replicate :: Point -> a -> Field a
-replicate Point{..} = Vec.replicate py . Vec.replicate px
+fill :: Point -> a -> Field a
+fill Point{..} = Vec.replicate (py+1) . Vec.replicate (px+1)
 
 cardinals, ordinals :: [Point]
 northwest, north, northeast, east, southeast, south, southwest, west :: Point

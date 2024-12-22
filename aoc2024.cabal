@@ -24,6 +24,7 @@ executable aoc2024
     , base ^>=4.20.0.0
     , containers
     , linear
+    , mtl
     , regex-tdfa
     , text
     , vector
