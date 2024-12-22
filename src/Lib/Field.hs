@@ -11,6 +11,7 @@ import Data.Map qualified as Map
 import Data.Maybe ( listToMaybe )
 import Data.Vector ( Vector, (!), (!?), (//) )
 import Data.Vector qualified as Vec
+import Linear.V2 ( V2(..) )
 
 type Field a = Vector (Vector a)
 
@@ -65,22 +66,14 @@ parse parseChar = vec . fmap (vec . fmap parseChar) . lines
 
 indices :: Field a -> [Point]
 indices field = let Point{..} = extent field in
-  [Point x y | x <- [0..px], y <- [0..py]]
+  [Point x y | y <- [0..py], x <- [0..px]]
 
 fill :: Point -> a -> Field a
 fill Point{..} = Vec.replicate (py+1) . Vec.replicate (px+1)
 
-cardinals, ordinals :: [Point]
-northwest, north, northeast, east, southeast, south, southwest, west :: Point
+cardinals, ordinals :: [V2 Int]
+northwest, north, northeast, east, southeast, south, southwest, west :: V2 Int
 cardinals@[north, east, south, west] =
-  [ Point 0 (-1)
-  , Point 1 0
-  , Point 0 1
-  , Point (-1) 0
-  ]
+  [ V2 0 (-1) , V2 1 0 , V2 0 1 , V2 (-1) 0 ]
 ordinals@[northwest, northeast, southeast, southwest] =
-  [ north + west
-  , north + east
-  , south + east
-  , south + west
-  ]
+  [ north+west , north+east , south+east , south+west ]
