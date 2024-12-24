@@ -26,5 +26,6 @@ executable aoc2024
     , linear
     , mtl
     , regex-tdfa
+    , split
     , text
     , vector

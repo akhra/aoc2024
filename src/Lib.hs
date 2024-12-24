@@ -5,6 +5,7 @@ module Lib where
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Data.Vector ( Vector )
 import Data.Vector qualified as Vec
+import Linear ( V2(..) )
 
 default (Int)
 
@@ -33,3 +34,6 @@ unvec = Vec.toList
 
 countDigits :: Int -> Int
 countDigits = (1 +) . floor . logBase @Double 10 . fromIntegral
+
+determinant :: Num a => V2 a -> V2 a -> a
+determinant (V2 a1 a2) (V2 b1 b2) = a1 * b2 - a2 * b1
