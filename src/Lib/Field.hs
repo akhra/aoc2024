@@ -5,7 +5,7 @@ module Lib.Field
 ) where
 
 import Lib ( both, vec )
-import Lib.Point ( Point, pattern Point, px, py, bounded )
+import Lib.Point ( Point, pattern Point, px, py, within )
 import Control.Arrow ( (&&&) )
 import Data.Map qualified as Map
 import Data.Maybe ( listToMaybe )
@@ -56,7 +56,7 @@ elemIndex :: Eq a => a -> Field a -> Maybe Point
 elemIndex x = findIndex (==x)
 
 within :: Point -> Field a -> Bool
-within point field = bounded point (extent field)
+within point field = point `Lib.Point.within` (extent field)
 
 extent :: Field a -> Point
 extent = uncurry Point . both pred . (minimum . fmap Vec.length &&& Vec.length)

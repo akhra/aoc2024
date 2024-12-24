@@ -1,7 +1,7 @@
 module Days.D08 where
 
 import Lib ( Dispatch, dispatchWith )
-import Lib.Point ( Point, bounded )
+import Lib.Point ( Point, within )
 import Lib.Field qualified as Field
 import Data.Vector qualified as Vec
 import Data.List qualified as List
@@ -27,7 +27,7 @@ antinodes AntennaField{..} = do
   [ant1,ant2] <- filter ((==2) . length) $ List.subsequences antennae
   let offset = ant1 - ant2
   antinode <- [ant1 + offset, ant2 - offset]
-  guard $ bounded bounds antinode
+  guard $ antinode `within` bounds
   pure antinode
 
 antinodes2 :: AntennaField -> [Point]
@@ -35,7 +35,7 @@ antinodes2 AntennaField{..} = do
   [ant,ant'] <- filter ((==2) . length) $ List.subsequences antennae
   let
     offset = ant - ant'
-    periodic s = takeWhile (bounded bounds) $ List.iterate (s * offset +) ant
+    periodic s = takeWhile (`within` bounds) $ List.iterate (s * offset +) ant
   ant : periodic 1 <> periodic (-1)
 
 parseInput :: String -> [AntennaField]

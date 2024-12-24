@@ -1,9 +1,12 @@
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# LANGUAGE PatternSynonyms #-}
 module Lib where
 
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Data.Vector ( Vector )
 import Data.Vector qualified as Vec
+
+default (Int)
 
 type Dispatch = String -> String -> String
 
@@ -29,4 +32,4 @@ unvec :: Vector a -> [a]
 unvec = Vec.toList
 
 countDigits :: Int -> Int
-countDigits = ((1::Int) +) . floor . logBase @Double 10 . fromIntegral
+countDigits = (1 +) . floor . logBase @Double 10 . fromIntegral
